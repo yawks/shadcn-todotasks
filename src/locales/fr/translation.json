@@ -1,0 +1,17 @@
+{
+  "add_task": "Ajouter une tâche",
+  "title": "Titre",
+  "due_date": "Date d'échéance",
+  "pick_a_date": "Choisissez une date",
+  "priority": "Priorité",
+  "urgent": "Urgent",
+  "normal": "Normale",
+  "non_urgent": "Non urgente",
+  "description": "Description",
+  "project": "Projet",
+  "select_project": "Sélectionner un projet",
+  "search_project": "Rechercher un projet...",
+  "no_project_found": "Aucun projet trouvé.",
+  "create": "Créer",
+  "creating...": "Création..."
+}

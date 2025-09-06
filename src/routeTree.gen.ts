@@ -31,13 +31,12 @@ import { Route as AuthenticatedSettingsIndexImport } from './routes/_authenticat
 import { Route as AuthenticatedHelpCenterIndexImport } from './routes/_authenticated/help-center/index'
 import { Route as AuthenticatedChatsIndexImport } from './routes/_authenticated/chats/index'
 import { Route as AuthenticatedUrlUrlImport } from './routes/_authenticated/url/$url'
+import { Route as AuthenticatedTasksAddImport } from './routes/_authenticated/tasks/add'
 import { Route as AuthenticatedSettingsNotificationsImport } from './routes/_authenticated/settings/notifications'
 import { Route as AuthenticatedSettingsDisplayImport } from './routes/_authenticated/settings/display'
 import { Route as AuthenticatedSettingsAppearanceImport } from './routes/_authenticated/settings/appearance'
 import { Route as AuthenticatedSettingsAccountImport } from './routes/_authenticated/settings/account'
 import { Route as AuthenticatedProjectProjectIdImport } from './routes/_authenticated/project/$projectId'
-import { Route as AuthenticatedFolderFolderIdImport } from './routes/_authenticated/folder/$folderId'
-import { Route as AuthenticatedFeedFeedIdImport } from './routes/_authenticated/feed/$feedId'
 
 // Create/Update Routes
 
@@ -165,6 +164,12 @@ const AuthenticatedUrlUrlRoute = AuthenticatedUrlUrlImport.update({
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 
+const AuthenticatedTasksAddRoute = AuthenticatedTasksAddImport.update({
+  id: '/tasks/add',
+  path: '/tasks/add',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+
 const AuthenticatedSettingsNotificationsRoute =
   AuthenticatedSettingsNotificationsImport.update({
     id: '/notifications',
@@ -199,19 +204,6 @@ const AuthenticatedProjectProjectIdRoute =
     path: '/project/$projectId',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
-
-const AuthenticatedFolderFolderIdRoute =
-  AuthenticatedFolderFolderIdImport.update({
-    id: '/folder/$folderId',
-    path: '/folder/$folderId',
-    getParentRoute: () => AuthenticatedRouteRoute,
-  } as any)
-
-const AuthenticatedFeedFeedIdRoute = AuthenticatedFeedFeedIdImport.update({
-  id: '/feed/$feedId',
-  path: '/feed/$feedId',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
 
 // Populate the FileRoutesByPath interface
 
@@ -308,20 +300,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedIndexImport
       parentRoute: typeof AuthenticatedRouteImport
     }
-    '/_authenticated/feed/$feedId': {
-      id: '/_authenticated/feed/$feedId'
-      path: '/feed/$feedId'
-      fullPath: '/feed/$feedId'
-      preLoaderRoute: typeof AuthenticatedFeedFeedIdImport
-      parentRoute: typeof AuthenticatedRouteImport
-    }
-    '/_authenticated/folder/$folderId': {
-      id: '/_authenticated/folder/$folderId'
-      path: '/folder/$folderId'
-      fullPath: '/folder/$folderId'
-      preLoaderRoute: typeof AuthenticatedFolderFolderIdImport
-      parentRoute: typeof AuthenticatedRouteImport
-    }
     '/_authenticated/project/$projectId': {
       id: '/_authenticated/project/$projectId'
       path: '/project/$projectId'
@@ -356,6 +334,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/settings/notifications'
       preLoaderRoute: typeof AuthenticatedSettingsNotificationsImport
       parentRoute: typeof AuthenticatedSettingsRouteImport
+    }
+    '/_authenticated/tasks/add': {
+      id: '/_authenticated/tasks/add'
+      path: '/tasks/add'
+      fullPath: '/tasks/add'
+      preLoaderRoute: typeof AuthenticatedTasksAddImport
+      parentRoute: typeof AuthenticatedRouteImport
     }
     '/_authenticated/url/$url': {
       id: '/_authenticated/url/$url'
@@ -437,9 +422,8 @@ const AuthenticatedSettingsRouteRouteWithChildren =
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedSettingsRouteRoute: typeof AuthenticatedSettingsRouteRouteWithChildren
   AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
-  AuthenticatedFeedFeedIdRoute: typeof AuthenticatedFeedFeedIdRoute
-  AuthenticatedFolderFolderIdRoute: typeof AuthenticatedFolderFolderIdRoute
   AuthenticatedProjectProjectIdRoute: typeof AuthenticatedProjectProjectIdRoute
+  AuthenticatedTasksAddRoute: typeof AuthenticatedTasksAddRoute
   AuthenticatedUrlUrlRoute: typeof AuthenticatedUrlUrlRoute
   AuthenticatedChatsIndexRoute: typeof AuthenticatedChatsIndexRoute
   AuthenticatedHelpCenterIndexRoute: typeof AuthenticatedHelpCenterIndexRoute
@@ -451,9 +435,8 @@ interface AuthenticatedRouteRouteChildren {
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedSettingsRouteRoute: AuthenticatedSettingsRouteRouteWithChildren,
   AuthenticatedIndexRoute: AuthenticatedIndexRoute,
-  AuthenticatedFeedFeedIdRoute: AuthenticatedFeedFeedIdRoute,
-  AuthenticatedFolderFolderIdRoute: AuthenticatedFolderFolderIdRoute,
   AuthenticatedProjectProjectIdRoute: AuthenticatedProjectProjectIdRoute,
+  AuthenticatedTasksAddRoute: AuthenticatedTasksAddRoute,
   AuthenticatedUrlUrlRoute: AuthenticatedUrlUrlRoute,
   AuthenticatedChatsIndexRoute: AuthenticatedChatsIndexRoute,
   AuthenticatedHelpCenterIndexRoute: AuthenticatedHelpCenterIndexRoute,
@@ -479,13 +462,12 @@ export interface FileRoutesByFullPath {
   '/500': typeof errors500Route
   '/503': typeof errors503Route
   '/': typeof AuthenticatedIndexRoute
-  '/feed/$feedId': typeof AuthenticatedFeedFeedIdRoute
-  '/folder/$folderId': typeof AuthenticatedFolderFolderIdRoute
   '/project/$projectId': typeof AuthenticatedProjectProjectIdRoute
   '/settings/account': typeof AuthenticatedSettingsAccountRoute
   '/settings/appearance': typeof AuthenticatedSettingsAppearanceRoute
   '/settings/display': typeof AuthenticatedSettingsDisplayRoute
   '/settings/notifications': typeof AuthenticatedSettingsNotificationsRoute
+  '/tasks/add': typeof AuthenticatedTasksAddRoute
   '/url/$url': typeof AuthenticatedUrlUrlRoute
   '/chats': typeof AuthenticatedChatsIndexRoute
   '/help-center': typeof AuthenticatedHelpCenterIndexRoute
@@ -507,13 +489,12 @@ export interface FileRoutesByTo {
   '/500': typeof errors500Route
   '/503': typeof errors503Route
   '/': typeof AuthenticatedIndexRoute
-  '/feed/$feedId': typeof AuthenticatedFeedFeedIdRoute
-  '/folder/$folderId': typeof AuthenticatedFolderFolderIdRoute
   '/project/$projectId': typeof AuthenticatedProjectProjectIdRoute
   '/settings/account': typeof AuthenticatedSettingsAccountRoute
   '/settings/appearance': typeof AuthenticatedSettingsAppearanceRoute
   '/settings/display': typeof AuthenticatedSettingsDisplayRoute
   '/settings/notifications': typeof AuthenticatedSettingsNotificationsRoute
+  '/tasks/add': typeof AuthenticatedTasksAddRoute
   '/url/$url': typeof AuthenticatedUrlUrlRoute
   '/chats': typeof AuthenticatedChatsIndexRoute
   '/help-center': typeof AuthenticatedHelpCenterIndexRoute
@@ -538,13 +519,12 @@ export interface FileRoutesById {
   '/(errors)/500': typeof errors500Route
   '/(errors)/503': typeof errors503Route
   '/_authenticated/': typeof AuthenticatedIndexRoute
-  '/_authenticated/feed/$feedId': typeof AuthenticatedFeedFeedIdRoute
-  '/_authenticated/folder/$folderId': typeof AuthenticatedFolderFolderIdRoute
   '/_authenticated/project/$projectId': typeof AuthenticatedProjectProjectIdRoute
   '/_authenticated/settings/account': typeof AuthenticatedSettingsAccountRoute
   '/_authenticated/settings/appearance': typeof AuthenticatedSettingsAppearanceRoute
   '/_authenticated/settings/display': typeof AuthenticatedSettingsDisplayRoute
   '/_authenticated/settings/notifications': typeof AuthenticatedSettingsNotificationsRoute
+  '/_authenticated/tasks/add': typeof AuthenticatedTasksAddRoute
   '/_authenticated/url/$url': typeof AuthenticatedUrlUrlRoute
   '/_authenticated/chats/': typeof AuthenticatedChatsIndexRoute
   '/_authenticated/help-center/': typeof AuthenticatedHelpCenterIndexRoute
@@ -570,13 +550,12 @@ export interface FileRouteTypes {
     | '/500'
     | '/503'
     | '/'
-    | '/feed/$feedId'
-    | '/folder/$folderId'
     | '/project/$projectId'
     | '/settings/account'
     | '/settings/appearance'
     | '/settings/display'
     | '/settings/notifications'
+    | '/tasks/add'
     | '/url/$url'
     | '/chats'
     | '/help-center'
@@ -597,13 +576,12 @@ export interface FileRouteTypes {
     | '/500'
     | '/503'
     | '/'
-    | '/feed/$feedId'
-    | '/folder/$folderId'
     | '/project/$projectId'
     | '/settings/account'
     | '/settings/appearance'
     | '/settings/display'
     | '/settings/notifications'
+    | '/tasks/add'
     | '/url/$url'
     | '/chats'
     | '/help-center'
@@ -626,13 +604,12 @@ export interface FileRouteTypes {
     | '/(errors)/500'
     | '/(errors)/503'
     | '/_authenticated/'
-    | '/_authenticated/feed/$feedId'
-    | '/_authenticated/folder/$folderId'
     | '/_authenticated/project/$projectId'
     | '/_authenticated/settings/account'
     | '/_authenticated/settings/appearance'
     | '/_authenticated/settings/display'
     | '/_authenticated/settings/notifications'
+    | '/_authenticated/tasks/add'
     | '/_authenticated/url/$url'
     | '/_authenticated/chats/'
     | '/_authenticated/help-center/'
@@ -699,9 +676,8 @@ export const routeTree = rootRoute
       "children": [
         "/_authenticated/settings",
         "/_authenticated/",
-        "/_authenticated/feed/$feedId",
-        "/_authenticated/folder/$folderId",
         "/_authenticated/project/$projectId",
+        "/_authenticated/tasks/add",
         "/_authenticated/url/$url",
         "/_authenticated/chats/",
         "/_authenticated/help-center/",
@@ -755,14 +731,6 @@ export const routeTree = rootRoute
       "filePath": "_authenticated/index.tsx",
       "parent": "/_authenticated"
     },
-    "/_authenticated/feed/$feedId": {
-      "filePath": "_authenticated/feed/$feedId.tsx",
-      "parent": "/_authenticated"
-    },
-    "/_authenticated/folder/$folderId": {
-      "filePath": "_authenticated/folder/$folderId.tsx",
-      "parent": "/_authenticated"
-    },
     "/_authenticated/project/$projectId": {
       "filePath": "_authenticated/project/$projectId.tsx",
       "parent": "/_authenticated"
@@ -782,6 +750,10 @@ export const routeTree = rootRoute
     "/_authenticated/settings/notifications": {
       "filePath": "_authenticated/settings/notifications.tsx",
       "parent": "/_authenticated/settings"
+    },
+    "/_authenticated/tasks/add": {
+      "filePath": "_authenticated/tasks/add.tsx",
+      "parent": "/_authenticated"
     },
     "/_authenticated/url/$url": {
       "filePath": "_authenticated/url/$url.tsx",

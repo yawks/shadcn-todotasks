@@ -3,6 +3,7 @@ import { Task, TaskType } from '@/backends/types'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useLocation, useNavigate } from '@tanstack/react-router'
 
+import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
 import { FontSizeSwitch } from '@/components/font-size-switch'
 import { Header } from '@/components/layout/header'
@@ -25,6 +26,8 @@ export default function Tasks() {
   const location = useLocation();
   const navigate = useNavigate();
   const { taskQuery, setTaskQuery } = useTaskQuery()
+  const { t } = useTranslation();
+  const navigate = useNavigate();
   const { isSearchMode, searchResults, clearSearchMode } = useSearch()
   const isMobile = useIsMobile()
 
@@ -218,6 +221,7 @@ export default function Tasks() {
         )}
         <div className="flex items-center gap-2">
           <Search />
+          <Button onClick={() => navigate({ to: '/tasks/add' })}>{t('add_task')}</Button>
           <FontSizeSwitch />
           <ThemeSwitch />
           <ProfileDropdown />

@@ -298,4 +298,35 @@ export default class TodoBackend implements Backend {
 
     return tasks;
   }
+
+  async createProject(name: string): Promise<Project> {
+    console.log('Creating project:', name);
+    // Mock implementation
+    const newProject: Project = {
+      id: Math.random().toString(36).substring(7),
+      title: name,
+      icon: '📋',
+      description: '',
+      taskCount: 0,
+    };
+    return Promise.resolve(newProject);
+  }
+
+  async createTask(task: Partial<Task>): Promise<Task> {
+    console.log('Creating task:', task);
+    // Mock implementation
+    const newTask: Task = {
+      id: Math.floor(Math.random() * 1000),
+      project: task.project || null,
+      title: task.title || 'No title',
+      description: task.description || null,
+      priority: task.priority || 1,
+      createdAt: new Date(),
+      dueDate: task.dueDate || null,
+      completed: false,
+      completedAt: null,
+      tags: task.tags || null,
+    };
+    return Promise.resolve(newTask);
+  }
 }

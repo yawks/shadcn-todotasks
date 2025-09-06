@@ -13,9 +13,7 @@ import {
 import { TaskFilter, TaskType } from '@/backends/types'
 
 import { Button } from '../ui/button'
-import { FoldersLoader } from './loaders/folders-loader'
 import { ProjectsNavGroup } from './projects-nav-group'
-import { Suspense } from 'react'
 import { useNavigate } from '@tanstack/react-router'
 import { useSearch } from '@/context/search-context'
 import { useTaskQuery } from '@/context/task-query-provider'
@@ -60,9 +58,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       <SidebarHeader>
       </SidebarHeader>
       <SidebarContent>
-        <Suspense fallback={<FoldersLoader />}>
-          <ProjectsNavGroup />
-        </Suspense>
+        <ProjectsNavGroup />
 
         <SidebarGroup>
           <SidebarGroupLabel>Filters</SidebarGroupLabel>
