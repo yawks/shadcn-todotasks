@@ -27,7 +27,6 @@ export default function Tasks() {
   const navigate = useNavigate();
   const { taskQuery, setTaskQuery } = useTaskQuery()
   const { t } = useTranslation();
-  const navigate = useNavigate();
   const { isSearchMode, searchResults, clearSearchMode } = useSearch()
   const isMobile = useIsMobile()
 
