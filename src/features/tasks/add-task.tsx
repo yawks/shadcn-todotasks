@@ -174,6 +174,7 @@ export function AddTask() {
                   <Tiptap
                     content={field.value || ''}
                     onChange={field.onChange}
+                    placeholder={t('start_writing')}
                   />
                 </FormControl>
                 <FormMessage />

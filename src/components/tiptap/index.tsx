@@ -2,21 +2,19 @@ import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Placeholder from '@tiptap/extension-placeholder';
 import Link from '@tiptap/extension-link';
-import { Toolbar } from './toolbars/toolbar';
-import { BubbleMenuComponent } from './bubble-menu';
-import { FloatingMenuComponent } from './floating-menu';
 
 interface TiptapProps {
   content: string;
   onChange: (content: string) => void;
+  placeholder?: string;
 }
 
-const Tiptap = ({ content, onChange }: TiptapProps) => {
+const Tiptap = ({ content, onChange, placeholder }: TiptapProps) => {
   const editor = useEditor({
     extensions: [
       StarterKit,
       Placeholder.configure({
-        placeholder: 'Start writing...',
+        placeholder: placeholder || 'Start writing...',
       }),
       Link.configure({
         openOnClick: false,
@@ -36,9 +34,6 @@ const Tiptap = ({ content, onChange }: TiptapProps) => {
 
   return (
     <div className="border rounded-md">
-      <Toolbar editor={editor} />
-      <BubbleMenuComponent editor={editor} />
-      <FloatingMenuComponent editor={editor} />
       <EditorContent editor={editor} />
     </div>
   );
