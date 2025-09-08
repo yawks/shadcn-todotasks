@@ -23,6 +23,7 @@ import { toast } from 'sonner'
 import { useAuth } from './utils/auth'
 import { useAuthStore } from '@/stores/authStore'
 import './i18n';
+import './styles/tiptap.css';
 
 const queryClient = new QueryClient({
   defaultOptions: {
