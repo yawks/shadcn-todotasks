@@ -1,7 +1,5 @@
-import tailwindcssAnimate from 'tailwindcss-animate';
-
 /** @type {import('tailwindcss').Config} */
-const config = {
+module.exports = {
   darkMode: ["class"],
   content: [
     './index.html',
@@ -10,7 +8,6 @@ const config = {
     './app/**/*.{ts,tsx}',
     './src/**/*.{ts,tsx,css}',
   ],
-  prefix: "",
   theme: {
     container: {
       center: true,
@@ -76,7 +73,5 @@ const config = {
       },
     },
   },
-  plugins: [tailwindcssAnimate],
-};
-
-export default config;
+  plugins: [require("tailwindcss-animate")],
+}

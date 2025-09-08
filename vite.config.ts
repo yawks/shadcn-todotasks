@@ -3,7 +3,6 @@ import { VitePWA } from 'vite-plugin-pwa'
 import { defineConfig } from 'vite'
 import path from 'path'
 import react from '@vitejs/plugin-react-swc'
-import tailwindcss from '@tailwindcss/vite'
 
 // https://vite.dev/config/
 export default defineConfig({
@@ -13,7 +12,6 @@ export default defineConfig({
       autoCodeSplitting: true,
     }),
     react(),
-    tailwindcss(),
     VitePWA({
       registerType: 'autoUpdate',
       includeAssets: ['images/favicon.svg', 'images/favicon-32x32.png', 'images/favicon-16x16.png', 'images/apple-touch-icon.png', 'images/icon-192.png', 'images/icon-512.png'],
