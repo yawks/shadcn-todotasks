@@ -3,10 +3,13 @@
   "title": "Titre",
   "due_date": "Date d'échéance",
   "pick_a_date": "Choisissez une date",
-  "priority": "Priorité",
-  "urgent": "Urgent",
-  "normal": "Normale",
-  "non_urgent": "Non urgente",
+  "priority": {
+    "title": "Priorité",
+    "urgent": "Urgente",
+    "normal": "Normale",
+    "low": "Basse",
+    "none": "Aucune"
+  },
   "description": "Description",
   "project": "Projet",
   "select_project": "Sélectionner un projet",
@@ -14,5 +17,12 @@
   "no_project_found": "Aucun projet trouvé.",
   "create": "Créer",
   "creating...": "Création...",
-  "start_writing": "Commencez à écrire..."
+  "start_writing": "Commencez à écrire...",
+  "tasks": {
+    "noneFound": "Aucune tâche trouvée"
+  },
+  "tooltip": {
+    "viewTask": "Voir le détail de la tâche"
+  },
+  "locale": "fr-FR"
 }
