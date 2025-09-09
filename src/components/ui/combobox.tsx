@@ -68,7 +68,7 @@ export function Combobox({ items, placeholder, searchPlaceholder, noItemsText, v
           className={cn("w-full justify-between", className)}
         >
           {value
-            ? items.find((item) => item.value === value)?.label
+            ? items.find((item) => item.value === value)?.label || value
             : placeholder}
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
