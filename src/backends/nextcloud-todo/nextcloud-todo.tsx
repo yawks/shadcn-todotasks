@@ -15,6 +15,11 @@ export default class TodoBackend implements Backend {
     this.url = localStorage.getItem('backend-url') ?? ''
     this.login = localStorage.getItem('backend-login') ?? ''
     this.password = localStorage.getItem('backend-password') ?? ''
+
+    // In development, use the proxy
+    if (import.meta.env.DEV && this.url) {
+      this.url = this.url.replace(/^https:\/\/[^/]+/, '/api')
+    }
   }
 
   private async _getApiUrl(path: string): Promise<string> {
