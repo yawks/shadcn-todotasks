@@ -1,10 +1,8 @@
 "use client"
 
 import * as React from "react"
-import { Check, ChevronsUpDown } from "lucide-react"
 
-import { cn } from "@/lib/utils"
-import { Button } from "@/components/ui/button"
+import { Check, ChevronsUpDown } from "lucide-react"
 import {
   Command,
   CommandEmpty,
@@ -19,6 +17,9 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover"
 
+import { Button } from "@/components/ui/button"
+import { cn } from "@/lib/utils"
+
 interface ComboboxProps {
   items: { value: string; label: string }[];
   placeholder: string;
@@ -26,24 +27,36 @@ interface ComboboxProps {
   noItemsText: string;
   value?: string;
   onChange?: (value: string) => void;
+  className?: string;
+  popoverClassName?: string;
+  popoverAlign?: "start" | "center" | "end";
+  popoverSide?: "top" | "right" | "bottom" | "left";
 }
 
-export function Combobox({ items, placeholder, searchPlaceholder, noItemsText, value, onChange }: ComboboxProps) {
+export function Combobox({ items, placeholder, searchPlaceholder, noItemsText, value, onChange, className, popoverClassName, popoverAlign = "center", popoverSide = "bottom" }: ComboboxProps) {
   const [open, setOpen] = React.useState(false)
-  const [inputValue, setInputValue] = React.useState(value || "")
+  const [searchValue, setSearchValue] = React.useState("")
 
   const handleSelect = (currentValue: string) => {
     const newValue = currentValue === value ? "" : currentValue;
     if (onChange) {
       onChange(newValue);
     }
-    setInputValue(newValue);
     setOpen(false);
   };
 
-  const filteredItems = items.filter((item) =>
-    item.label.toLowerCase().includes(inputValue.toLowerCase())
-  );
+  const filteredItems = React.useMemo(() => {
+    if (!searchValue) return items;
+    return items.filter((item) =>
+      item.label.toLowerCase().includes(searchValue.toLowerCase())
+    );
+  }, [items, searchValue]);
+
+  React.useEffect(() => {
+    if (!open) {
+      setSearchValue("");
+    }
+  }, [open]);
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -52,7 +65,7 @@ export function Combobox({ items, placeholder, searchPlaceholder, noItemsText, v
           variant="outline"
           role="combobox"
           aria-expanded={open}
-          className="w-full justify-between"
+          className={cn("w-full justify-between", className)}
         >
           {value
             ? items.find((item) => item.value === value)?.label
@@ -60,16 +73,16 @@ export function Combobox({ items, placeholder, searchPlaceholder, noItemsText, v
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
+      <PopoverContent className={cn("w-[--radix-popover-trigger-width] p-0", popoverClassName)} align={popoverAlign} side={popoverSide}>
         <Command>
           <CommandInput
             placeholder={searchPlaceholder}
-            value={inputValue}
-            onValueChange={setInputValue}
+            value={searchValue}
+            onValueChange={setSearchValue}
           />
           <CommandList>
             <CommandEmpty>
-              <CommandItem onSelect={() => handleSelect(inputValue)}>
+              <CommandItem onSelect={() => handleSelect(searchValue)}>
                 {noItemsText}
               </CommandItem>
             </CommandEmpty>

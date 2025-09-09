@@ -4,6 +4,7 @@ import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
 import { Form, FormControl, FormField, FormItem, FormMessage } from '@/components/ui/form';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { format, isSameYear, isToday, isTomorrow } from 'date-fns';
 import { useEffect, useRef, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
@@ -13,7 +14,6 @@ import { Combobox } from '@/components/ui/combobox';
 import { Input } from '@/components/ui/input';
 import Tiptap from '@/components/tiptap';
 import { cn } from '@/lib/utils';
-import { format } from 'date-fns';
 import { useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -23,8 +23,26 @@ const formSchema = z.object({
   dueDate: z.date().optional(),
   priority: z.enum(['urgent', 'normal', 'non-urgent']),
   description: z.string().optional(),
-  project: z.string(),
 });
+
+// Function to intelligently format dates
+const formatDateSmart = (date: Date): string => {
+  if (isToday(date)) {
+    return "today";
+  }
+  if (isTomorrow(date)) {
+    return "tomorrow";
+  }
+  
+  // For other dates
+  if (isSameYear(date, new Date())) {
+    // Same year: display "day month"
+    return format(date, "d MMM");
+  } else {
+    // Different year: display "day month year"
+    return format(date, "d MMM yyyy");
+  }
+};
 
 interface AddTaskModalProps {
   trigger?: React.ReactNode;
@@ -33,6 +51,7 @@ interface AddTaskModalProps {
 export function AddTaskModal({ trigger }: AddTaskModalProps) {
   const { t } = useTranslation();
   const [open, setOpen] = useState(false);
+  const titleInputRef = useRef<HTMLInputElement>(null);
 
   // Temporairement remplacer les données par des mock pour tester
   const projects = [
@@ -42,7 +61,7 @@ export function AddTaskModal({ trigger }: AddTaskModalProps) {
 
   const createTaskMutation = {
     mutate: (data: Record<string, unknown>) => {
-      alert('Tâche créée: ' + JSON.stringify(data));
+      console.log('Task created:', data);
       setOpen(false);
       form.reset();
     },
@@ -59,8 +78,19 @@ export function AddTaskModal({ trigger }: AddTaskModalProps) {
     defaultValues: {
       title: '',
       priority: 'normal',
+      description: '',
+      project: '',
     },
   });
+
+  // Auto-focus sur le champ titre quand la popin s'affiche
+  useEffect(() => {
+    if (open && titleInputRef.current) {
+      setTimeout(() => {
+        titleInputRef.current?.focus();
+      }, 100);
+    }
+  }, [open]);
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     let projectId = values.project;
@@ -79,10 +109,12 @@ export function AddTaskModal({ trigger }: AddTaskModalProps) {
       <DialogTrigger asChild>
         {trigger || <Button>{t('add_task')}</Button>}
       </DialogTrigger>
-      <DialogContent className="!max-w-[700px]">
+      {/* Popin sans titre avec bordures très fines et largeur adaptée au contenu */}
+      <DialogContent className="w-fit min-w-[700px] max-w-4xl border-[0.5px] border-border">
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            {/* Title without label and border */}
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+            
+            {/* Zone de saisie du titre - grande police, bold, sans cadre, focus auto */}
             <FormField
               control={form.control}
               name="title"
@@ -90,10 +122,10 @@ export function AddTaskModal({ trigger }: AddTaskModalProps) {
                 <FormItem>
                   <FormControl>
                     <Input 
-                      {...field} 
+                      {...field}
+                      ref={titleInputRef}
                       placeholder="Nom de la tâche"
-                      className="border-0 font-medium px-0 focus-visible:ring-0 shadow-none"
-                      style={{ fontSize: '1.5rem' }}
+                      className="border-0 md:text-2xl px-0 focus-visible:ring-0 shadow-none bg-transparent"
                     />
                   </FormControl>
                   <FormMessage />
@@ -101,7 +133,7 @@ export function AddTaskModal({ trigger }: AddTaskModalProps) {
               )}
             />
 
-            {/* Description without label */}
+            {/* Zone de saisie description - Tiptap sans cadre */}
             <FormField
               control={form.control}
               name="description"
@@ -111,7 +143,7 @@ export function AddTaskModal({ trigger }: AddTaskModalProps) {
                     <Tiptap
                       content={field.value || ''}
                       onChange={field.onChange}
-                      placeholder="Description de la tâche..."
+                      placeholder="Description"
                       noBorder={true}
                     />
                   </FormControl>
@@ -120,28 +152,31 @@ export function AddTaskModal({ trigger }: AddTaskModalProps) {
               )}
             />
 
-            {/* Controls on same line with equal height and spacing */}
-            <div className="flex gap-4 items-end justify-between">
-              <div className="flex gap-4 items-end">
+            {/* Row with selectors (left) and create button (right) - same height */}
+            <div className="flex items-center justify-between gap-4">
+              {/* Group of 3 selectors on the left */}
+              <div className="flex items-center gap-3">
+                
+                {/* Date selector */}
                 <FormField
                   control={form.control}
                   name="dueDate"
                   render={({ field }) => (
-                    <FormItem style={{ flexBasis: '140px' }}>
+                    <FormItem>
                       <Popover>
                         <PopoverTrigger asChild>
                           <FormControl>
                             <Button
                               variant="outline"
                               className={cn(
-                                "w-full justify-start text-left font-normal h-10 border-gray-200",
+                                "w-36 justify-start text-left font-normal h-10 border-[0.5px]",
                                 !field.value && "text-muted-foreground"
                               )}
                             >
                               {field.value ? (
-                                format(field.value, "MMM d")
+                                formatDateSmart(field.value)
                               ) : (
-                                <span>{t('due_date')}</span>
+                                <span>Date</span>
                               )}
                               <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                             </Button>
@@ -152,9 +187,7 @@ export function AddTaskModal({ trigger }: AddTaskModalProps) {
                             mode="single"
                             selected={field.value}
                             onSelect={field.onChange}
-                            disabled={(date) =>
-                              date < new Date("1900-01-01")
-                            }
+                            disabled={(date) => date < new Date("1900-01-01")}
                             initialFocus
                           />
                         </PopoverContent>
@@ -164,21 +197,22 @@ export function AddTaskModal({ trigger }: AddTaskModalProps) {
                   )}
                 />
 
+                {/* Priority selector */}
                 <FormField
                   control={form.control}
                   name="priority"
                   render={({ field }) => (
-                    <FormItem style={{ flexBasis: '120px' }}>
+                    <FormItem>
                       <Select onValueChange={field.onChange} defaultValue={field.value}>
                         <FormControl>
-                          <SelectTrigger className="!h-10 !min-h-[40px] border-gray-200 [&>svg]:hidden">
-                            <SelectValue placeholder={t('priority')} />
+                          <SelectTrigger className="w-32 h-10 border-[0.5px]">
+                            <SelectValue placeholder="Priorité" />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          <SelectItem value="urgent">{t('urgent')}</SelectItem>
-                          <SelectItem value="normal">{t('normal')}</SelectItem>
-                          <SelectItem value="non-urgent">{t('non_urgent')}</SelectItem>
+                          <SelectItem value="urgent">Urgent</SelectItem>
+                          <SelectItem value="normal">Normal</SelectItem>
+                          <SelectItem value="non-urgent">Non urgent</SelectItem>
                         </SelectContent>
                       </Select>
                       <FormMessage />
@@ -186,22 +220,23 @@ export function AddTaskModal({ trigger }: AddTaskModalProps) {
                   )}
                 />
 
+                {/* Project selector */}
                 <FormField
                   control={form.control}
                   name="project"
                   render={({ field }) => (
-                    <FormItem style={{ flexBasis: '200px' }}>
+                    <FormItem>
                       <FormControl>
                         <Combobox
                           items={projects.map((project) => ({
                             value: project.id,
                             label: project.title,
                           }))}
-                          placeholder={t('project')}
-                          searchPlaceholder={t('search_project')}
-                          noItemsText={t('no_project_found')}
-                          className="h-10 border-gray-200 [&>svg]:hidden"
-                          popoverClassName="w-[400px]"
+                          placeholder="Project"
+                          searchPlaceholder="Search for a project..."
+                          noItemsText="No project found"
+                          className="w-44 h-10 border-[0.5px]"
+                          popoverClassName="w-80"
                           popoverAlign="start"
                           popoverSide="bottom"
                           {...field}
@@ -213,14 +248,16 @@ export function AddTaskModal({ trigger }: AddTaskModalProps) {
                 />
               </div>
 
+              {/* Create button on the right */}
               <Button 
                 type="submit" 
                 disabled={createTaskMutation.isPending || createProjectMutation.isPending}
                 className="h-10 px-6"
               >
-                {createTaskMutation.isPending || createProjectMutation.isPending ? t('creating...') : t('create')}
+                {createTaskMutation.isPending || createProjectMutation.isPending ? 'Creating...' : 'Create'}
               </Button>
             </div>
+
           </form>
         </Form>
       </DialogContent>
