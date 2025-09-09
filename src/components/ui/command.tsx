@@ -1,7 +1,5 @@
 import * as React from 'react'
-import { Command as CommandPrimitive } from 'cmdk'
-import { SearchIcon } from 'lucide-react'
-import { cn } from '@/lib/utils'
+
 import {
   Dialog,
   DialogContent,
@@ -9,6 +7,10 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
+
+import { Command as CommandPrimitive } from 'cmdk'
+import { SearchIcon } from 'lucide-react'
+import { cn } from '@/lib/utils'
 
 function Command({
   className,
@@ -63,7 +65,7 @@ function CommandInput({
       <CommandPrimitive.Input
         data-slot='command-input'
         className={cn(
-          'placeholder:text-muted-foreground flex h-10 w-full rounded-md bg-transparent py-3 text-sm outline-hidden disabled:cursor-not-allowed disabled:opacity-50',
+          'placeholder:text-muted-foreground flex h-8 w-full rounded-md bg-transparent py-3 pl-2 text-sm outline-hidden disabled:cursor-not-allowed disabled:opacity-50',
           className
         )}
         {...props}

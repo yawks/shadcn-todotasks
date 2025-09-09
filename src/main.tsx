@@ -14,7 +14,7 @@ import { FontSizeProvider } from './context/font-size-context'
 import { InstallPWA } from '@/components/install-pwa'
 import { PWAPrompt } from '@/components/pwa-prompt'
 import ReactDOM from 'react-dom/client'
-import { StrictMode } from 'react'
+import { StrictMode, Suspense } from 'react'
 import { ThemeProvider } from './context/theme-context'
 import { handleServerError } from '@/utils/handle-server-error'
 // Generated Routes
@@ -22,6 +22,8 @@ import { routeTree } from './routeTree.gen'
 import { toast } from 'sonner'
 import { useAuth } from './utils/auth'
 import { useAuthStore } from '@/stores/authStore'
+import './i18n';
+import './styles/tiptap.css';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -106,10 +108,12 @@ if (!rootElement.innerHTML) {
                 const authentication = useAuth();
                 return (
                   <>
-                    <PWAPrompt />
-                    <InstallPWA />
-                    <ConnectionStatus />
-                    <RouterProvider router={router} context={{ authentication }} />
+                    <Suspense fallback="loading">
+                      <PWAPrompt />
+                      <InstallPWA />
+                      <ConnectionStatus />
+                      <RouterProvider router={router} context={{ authentication }} />
+                    </Suspense>
                   </>
                 );
               })()}

@@ -1,45 +1,25 @@
 export interface Backend {
   getProjects: () => Promise<Project[]>
+  createProject?(name: string): Promise<Project>
+  getProject?(id: string): Promise<Project>
+  updateProject?(id: string, data: Partial<Project>): Promise<Project>
+  deleteProject?(id: string): Promise<void>
+
   getTasks(query: TaskQuery, offset: number): Promise<Task[]>
-  searchTasks(content: string): Promise<Task[]>
+  createTask?(task: Partial<Task>): Promise<Task>
+  getTask?(id: string): Promise<Task>
+  updateTask?(id: string, task: Partial<Task>): Promise<Task>
+  deleteTask?(id: string): Promise<void>
+
   setTaskCompleted?(id: string): Promise<void>
+
+  searchTasks(content: string): Promise<Task[]>
+
+  getTaskFiles?(taskId: string): Promise<any[]>
+  addTaskFile?(taskId: string, file: any): Promise<any>
+  deleteTaskFile?(taskId: string, fileId: string): Promise<void>
 }
 
-export interface FeedBackendInterface {
-  getFolders(): Promise<FeedFolder[]>
-  getFeedItems(query: FeedQuery, offset?: number): Promise<FeedItem[]>
-  searchItems(content: string): Promise<FeedItem[]>
-  setFeedArticleRead?(id: string): Promise<void>
-}
-
-// Legacy Feed types (keeping for compatibility if needed)
-export type FeedFolder = {
-  id: string
-  name: string
-  unreadCount: number
-  feeds: Feed[]
-}
-
-export type Feed = {
-  id: string
-  title: string
-  unreadCount: number
-  faviconUrl: string
-  folderId: string
-}
-
-export type FeedItem = {
-  id: number
-  feed: Feed | null
-  folder: FeedFolder | null
-  title: string
-  url: string
-  pubDate: Date | null
-  read: boolean
-  starred: boolean
-  body: string
-  thumbnailUrl: string
-}
 
 // New Task types
 export type Project = {
@@ -81,21 +61,3 @@ export type TaskQuery = {
   projectId?: string
 }
 
-// Legacy types for backward compatibility
-export enum FeedType {
-  FOLDER = 'folder',
-  FEED = 'feed',
-  STARRED = 'starred',
-}
-
-export enum FeedFilter {
-  ALL = 'all',
-  UNREAD = 'unread',
-}
-
-export type FeedQuery = {
-  feedType?: FeedType
-  feedFilter: FeedFilter,
-  feedId?: string
-  folderId?: string
-}

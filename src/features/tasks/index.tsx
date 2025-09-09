@@ -3,6 +3,7 @@ import { Task, TaskType } from '@/backends/types'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useLocation, useNavigate } from '@tanstack/react-router'
 
+import { AddTaskModal } from './add-task-modal'
 import { Button } from '@/components/ui/button'
 import { FontSizeSwitch } from '@/components/font-size-switch'
 import { Header } from '@/components/layout/header'
@@ -20,11 +21,13 @@ import { useIsMobile } from '@/hooks/use-mobile'
 import { useResizablePanelsFlex } from '@/hooks/use-resizable-panels-flex'
 import { useSearch } from '@/context/search-context'
 import { useTaskQuery } from '@/context/task-query-provider'
+import { useTranslation } from 'react-i18next'
 
 export default function Tasks() {
   const location = useLocation();
   const navigate = useNavigate();
   const { taskQuery, setTaskQuery } = useTaskQuery()
+  const { t } = useTranslation();
   const { isSearchMode, searchResults, clearSearchMode } = useSearch()
   const isMobile = useIsMobile()
 
@@ -218,6 +221,7 @@ export default function Tasks() {
         )}
         <div className="flex items-center gap-2">
           <Search />
+          <AddTaskModal />
           <FontSizeSwitch />
           <ThemeSwitch />
           <ProfileDropdown />
