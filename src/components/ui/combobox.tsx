@@ -38,9 +38,8 @@ export function Combobox({ items, placeholder, searchPlaceholder, noItemsText, v
   const [searchValue, setSearchValue] = React.useState("")
 
   const handleSelect = (currentValue: string) => {
-    const newValue = currentValue === value ? "" : currentValue;
     if (onChange) {
-      onChange(newValue);
+      onChange(currentValue);
     }
     setOpen(false);
   };
@@ -91,7 +90,7 @@ export function Combobox({ items, placeholder, searchPlaceholder, noItemsText, v
                 <CommandItem
                   key={item.value}
                   value={item.value}
-                  onSelect={() => handleSelect(item.value)}
+                  onSelect={handleSelect}
                 >
                   <Check
                     className={cn(
