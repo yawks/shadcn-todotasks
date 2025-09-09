@@ -15,11 +15,6 @@ export default class TodoBackend implements Backend {
     this.url = localStorage.getItem('backend-url') ?? ''
     this.login = localStorage.getItem('backend-login') ?? ''
     this.password = localStorage.getItem('backend-password') ?? ''
-
-    // In development, use the proxy
-    if (import.meta.env.DEV && this.url) {
-      this.url = this.url.replace(/^https:\/\/[^/]+/, '/api')
-    }
   }
 
   private async _getApiUrl(path: string): Promise<string> {
@@ -245,7 +240,7 @@ export default class TodoBackend implements Backend {
   async createTask(task: Partial<Task>): Promise<Task> {
     const url = await this._getApiUrl('/tasks')
     const taskData = {
-      projectId: task.project?.id,
+      projectId: task.project ? parseInt(task.project.id, 10) : undefined,
       title: task.title,
       description: task.description,
       dueDate: task.dueDate?.toISOString(),
