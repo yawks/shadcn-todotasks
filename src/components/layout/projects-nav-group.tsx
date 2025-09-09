@@ -18,13 +18,6 @@ const getProjects = async () => {
         };
     })
 
-    const navItem: NavItem = {
-        title: 'All Tasks',
-        url: '/',
-        icon: IconChecklist,
-    }
-    navItems.unshift(navItem)
-
     return navItems
 }
 

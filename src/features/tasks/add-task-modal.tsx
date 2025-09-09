@@ -15,6 +15,9 @@ import { Input } from '@/components/ui/input';
 import Tiptap from '@/components/tiptap';
 import { cn } from '@/lib/utils';
 import { useForm } from 'react-hook-form';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+
+import TodoBackend from '@/backends/nextcloud-todo/nextcloud-todo';
 import { useTranslation } from 'react-i18next';
 import { zodResolver } from '@hookform/resolvers/zod';
 
@@ -23,6 +26,7 @@ const formSchema = z.object({
   dueDate: z.date().optional(),
   priority: z.enum(['urgent', 'normal', 'non-urgent']),
   description: z.string().optional(),
+  project: z.string().optional(),
 });
 
 // Function to intelligently format dates
@@ -52,26 +56,29 @@ export function AddTaskModal({ trigger }: AddTaskModalProps) {
   const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const titleInputRef = useRef<HTMLInputElement>(null);
+  const backend = new TodoBackend();
+  const queryClient = useQueryClient();
 
-  // Temporairement remplacer les données par des mock pour tester
-  const projects = [
-    { id: '1', title: 'Projet 1' },
-    { id: '2', title: 'Projet 2' }
-  ];
+  const { data: projects = [] } = useQuery({
+    queryKey: ['projects'],
+    queryFn: () => backend.getProjects(),
+  });
 
-  const createTaskMutation = {
-    mutate: (data: Record<string, unknown>) => {
-      console.log('Task created:', data);
+  const createTaskMutation = useMutation({
+    mutationFn: (taskData) => backend.createTask(taskData),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['tasks'] });
       setOpen(false);
       form.reset();
     },
-    isPending: false
-  };
+  });
 
-  const createProjectMutation = {
-    mutateAsync: (name: string) => Promise.resolve({ id: name }),
-    isPending: false
-  };
+  const createProjectMutation = useMutation({
+    mutationFn: (projectName) => backend.createProject(projectName),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['projects'] });
+    },
+  });
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -92,16 +99,38 @@ export function AddTaskModal({ trigger }: AddTaskModalProps) {
     }
   }, [open]);
 
-  async function onSubmit(values: z.infer<typeof formSchema>) {
-    let projectId = values.project;
-    const isNewProject = !projects.some((p) => p.id === projectId);
+  function priorityToNumber(priority: 'urgent' | 'normal' | 'non-urgent'): number {
+    switch (priority) {
+      case 'urgent': return 3;
+      case 'normal': return 2;
+      case 'non-urgent': return 1;
+      default: return 2;
+    }
+  }
 
-    if (isNewProject) {
-      const newProject = await createProjectMutation.mutateAsync(projectId);
-      projectId = newProject.id;
+  async function onSubmit(values: z.infer<typeof formSchema>) {
+    let project: Project | null = null;
+    const projectIdentifier = values.project;
+
+    if (projectIdentifier) {
+      const existingProject = projects.find((p) => p.id === projectIdentifier || p.title === projectIdentifier);
+
+      if (existingProject) {
+        project = existingProject;
+      } else {
+        project = await createProjectMutation.mutateAsync(projectIdentifier);
+      }
     }
 
-    createTaskMutation.mutate({ ...values, project: projectId });
+    const taskToCreate: Partial<Task> = {
+      title: values.title,
+      description: values.description,
+      dueDate: values.dueDate,
+      priority: priorityToNumber(values.priority),
+      project: project,
+    };
+
+    createTaskMutation.mutate(taskToCreate);
   }
 
   return (
