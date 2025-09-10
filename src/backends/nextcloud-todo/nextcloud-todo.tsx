@@ -243,6 +243,10 @@ export default class TodoBackend implements Backend {
   }
 
   async createTask(task: Partial<Task>): Promise<Task> {
+    if (!task.title || typeof task.title !== 'string' || task.title.trim() === '') {
+      throw new Error('Task title must be a non-empty string.');
+    }
+
     const url = await this._getApiUrl('/tasks')
     const taskData = {
       projectId: task.project ? parseInt(task.project.id, 10) : undefined,
