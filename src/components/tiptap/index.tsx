@@ -17,12 +17,13 @@ import StarterKit from '@tiptap/starter-kit';
 
 interface TiptapProps {
   content: string;
-  onChange: (content: string) => void;
+  onChange?: (content: string) => void;
+  onBlur?: (content: string) => void;
   placeholder?: string;
   noBorder?: boolean;
 }
 
-const Tiptap = ({ content, onChange, placeholder, noBorder }: TiptapProps) => {
+const Tiptap = ({ content, onChange, onBlur, placeholder, noBorder }: TiptapProps) => {
   const editor = useEditor({
     extensions: [
       StarterKit.configure({
@@ -56,7 +57,14 @@ const Tiptap = ({ content, onChange, placeholder, noBorder }: TiptapProps) => {
     ],
     content,
     onUpdate: ({ editor }) => {
-      onChange(editor.getHTML());
+      if (onChange) {
+        onChange(editor.getHTML());
+      }
+    },
+    onBlur: ({ editor }) => {
+      if (onBlur) {
+        onBlur(editor.getHTML());
+      }
     },
     editorProps: {
       attributes: {

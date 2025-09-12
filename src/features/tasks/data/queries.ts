@@ -1,9 +1,7 @@
 import { queryOptions } from '@tanstack/react-query'
 
 import { Task, TaskFilter } from '@/backends/types'
-import TodoBackend from '@/backends/nextcloud-todo/nextcloud-todo'
-
-const todoBackend = new TodoBackend()
+import todoBackend from '@/backends/nextcloud-todo/nextcloud-todo'
 
 // Priorities: 3 = Urgent, 2 = Normal, 1 = Low
 const priorityOrder: { [key: number]: number } = {

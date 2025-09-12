@@ -23,7 +23,7 @@ function toMySqlDateTime(date: Date): string {
 
 const NB_TASKS_TO_LOAD = 20;
 
-export default class TodoBackend implements Backend {
+class TodoBackend implements Backend {
   url: string
   login: string
   password: string
@@ -368,3 +368,6 @@ export default class TodoBackend implements Backend {
     await api.delete(url, this._getOptions('DELETE'))
   }
 }
+
+const todoBackend = new TodoBackend();
+export default todoBackend;

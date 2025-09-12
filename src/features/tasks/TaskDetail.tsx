@@ -2,9 +2,9 @@ import { IconCalendar, IconCheck, IconCircle, IconClock, IconFlag } from "@table
 import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Task } from "@/backends/types"
-import TodoBackend from "@/backends/nextcloud-todo/nextcloud-todo"
+import todoBackend from "@/backends/nextcloud-todo/nextcloud-todo"
 import { cn } from "@/lib/utils"
-import { useMemo, useState } from "react"
+import { useState } from "react"
 import { useQueryClient } from "@tanstack/react-query"
 import Tiptap from "@/components/tiptap"
 import { Input } from "@/components/ui/input"
@@ -13,16 +13,16 @@ import { toast } from "sonner"
 
 interface TaskDetailProps {
     readonly task: Task
-    readonly backend: TodoBackend
+    readonly projectId?: string
     readonly isMobile?: boolean
 }
 
-export function TaskDetail({ task, backend, isMobile = false }: TaskDetailProps) {
+export function TaskDetail({ task, projectId, isMobile = false }: TaskDetailProps) {
     const [isLoading, setIsLoading] = useState(false)
     const queryClient = useQueryClient()
 
     const updateTask = async (field: keyof Task, value: Task[keyof Task]) => {
-        const queryKey = ['tasks', { projectId: task.project?.id ?? 'all' }]
+        const queryKey = ['tasks', { projectId: projectId ?? 'all' }]
         await queryClient.cancelQueries({ queryKey })
 
         const previousTasks = queryClient.getQueryData(queryKey)
@@ -35,7 +35,7 @@ export function TaskDetail({ task, backend, isMobile = false }: TaskDetailProps)
         })
 
         try {
-            await backend.updateTask(task.id.toString(), { [field]: value })
+            await todoBackend.updateTask(task.id.toString(), { [field]: value })
         } catch (error) {
             queryClient.setQueryData(queryKey, previousTasks)
             toast.error(`Error updating task: ${error instanceof Error ? error.message : 'Unknown error'}`)
@@ -47,7 +47,7 @@ export function TaskDetail({ task, backend, isMobile = false }: TaskDetailProps)
 
         setIsLoading(true)
 
-        const queryKey = ['tasks', { projectId: task.project?.id ?? 'all' }]
+        const queryKey = ['tasks', { projectId: projectId ?? 'all' }]
         await queryClient.cancelQueries({ queryKey })
 
         const previousTasks = queryClient.getQueryData(queryKey)
@@ -60,7 +60,7 @@ export function TaskDetail({ task, backend, isMobile = false }: TaskDetailProps)
         })
 
         try {
-            await backend.setTaskCompleted(task.id.toString())
+            await todoBackend.setTaskCompleted(task.id.toString())
         } catch (error) {
             queryClient.setQueryData(queryKey, previousTasks)
             toast.error(`Error completing task: ${error instanceof Error ? error.message : 'Unknown error'}`)
@@ -145,7 +145,7 @@ export function TaskDetail({ task, backend, isMobile = false }: TaskDetailProps)
                             <h2 className="text-lg font-semibold mb-2">Description</h2>
                             <Tiptap
                                 content={task.description}
-                                onChange={(content) => updateTask('description', content)}
+                                onBlur={(content) => updateTask('description', content)}
                             />
                         </div>
                     )}
