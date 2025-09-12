@@ -118,7 +118,7 @@ export function Search({ className = '', placeholder = 'Search tasks...' }: Prop
     }, 300) // 300ms debounce
 
     return () => clearTimeout(timeoutId)
-  }, [searchQuery, backend, setSearchResults, setIsSearching, setSearchError])
+  }, [searchQuery, setSearchResults, setIsSearching, setSearchError])
 
   // Handle Enter key to show full search results
   const handleSearch = async () => {
