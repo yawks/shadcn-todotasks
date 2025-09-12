@@ -1,11 +1,15 @@
 import { IconCalendar, IconCheck, IconCircle, IconClock, IconFlag } from "@tabler/icons-react"
-
 import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Task } from "@/backends/types"
 import TodoBackend from "@/backends/nextcloud-todo/nextcloud-todo"
 import { cn } from "@/lib/utils"
 import { useState } from "react"
+import { useQueryClient } from "@tanstack/react-query"
+import Tiptap from "@/components/tiptap"
+import { Input } from "@/components/ui/input"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { toast } from "sonner"
 
 interface TaskDetailProps {
     readonly task: Task
@@ -14,18 +18,28 @@ interface TaskDetailProps {
 
 export function TaskDetail({ task, isMobile = false }: TaskDetailProps) {
     const [isLoading, setIsLoading] = useState(false)
+    const queryClient = useQueryClient()
+
+    const backend = new TodoBackend()
+
+    const updateTask = async (field: keyof Task, value: Task[keyof Task]) => {
+        try {
+            await backend.updateTask(task.id.toString(), { [field]: value })
+            await queryClient.invalidateQueries({ queryKey: ['tasks'] })
+        } catch (error) {
+            toast.error(`Error updating task: ${error instanceof Error ? error.message : 'Unknown error'}`)
+        }
+    }
 
     const handleCompleteToggle = async () => {
-        if (task.completed) return; // Don't allow uncompleting for now
-        
+        if (task.completed) return;
+
         setIsLoading(true)
         try {
-            const backend = new TodoBackend()
             await backend.setTaskCompleted(task.id.toString())
-            // TODO: Refresh the task list or update the task state
+            await queryClient.invalidateQueries({ queryKey: ['tasks'] })
         } catch (error) {
-            // Error handling - could show a toast notification instead
-            alert('Error completing task: ' + (error instanceof Error ? error.message : 'Unknown error'))
+            toast.error(`Error completing task: ${error instanceof Error ? error.message : 'Unknown error'}`)
         } finally {
             setIsLoading(false)
         }
@@ -55,9 +69,7 @@ export function TaskDetail({ task, isMobile = false }: TaskDetailProps) {
             className={cn(
                 'flex flex-col rounded-md border bg-primary-foreground shadow-sm h-full w-full',
                 {
-                    // Classes pour mobile : toujours visible et prend toute la place
                     'flex': isMobile,
-                    // Classes pour desktop : comportement original
                     'absolute inset-0 left-full z-50 hidden w-full flex-1 transition-all duration-200 sm:static sm:z-auto sm:flex': !isMobile,
                 }
             )}
@@ -72,7 +84,6 @@ export function TaskDetail({ task, isMobile = false }: TaskDetailProps) {
                 )}
                 
                 <div className="flex-1 p-6 overflow-y-auto">
-                    {/* Header */}
                     <div className="flex items-start gap-4 mb-6">
                         <button
                             onClick={handleCompleteToggle}
@@ -87,12 +98,14 @@ export function TaskDetail({ task, isMobile = false }: TaskDetailProps) {
                         </button>
                         
                         <div className="flex-1">
-                            <h1 className={cn(
-                                "text-2xl font-bold mb-2",
-                                task.completed && "line-through text-muted-foreground"
-                            )}>
-                                {task.title}
-                            </h1>
+                            <Input
+                                defaultValue={task.title}
+                                onBlur={(e) => updateTask('title', e.currentTarget.value)}
+                                className={cn(
+                                    "text-2xl font-bold mb-2",
+                                    task.completed && "line-through text-muted-foreground"
+                                )}
+                            />
                             
                             {task.project && (
                                 <div className="inline-flex items-center gap-2 bg-primary/10 text-primary px-3 py-1 rounded-full text-sm">
@@ -103,30 +116,36 @@ export function TaskDetail({ task, isMobile = false }: TaskDetailProps) {
                         </div>
                     </div>
 
-                    {/* Description */}
                     {task.description && (
                         <div className="mb-6">
                             <h2 className="text-lg font-semibold mb-2">Description</h2>
-                            <div className="prose prose-sm max-w-none">
-                                <p className="text-muted-foreground whitespace-pre-wrap">
-                                    {task.description}
-                                </p>
-                            </div>
+                            <Tiptap
+                                content={task.description}
+                                onChange={(content) => updateTask('description', content)}
+                            />
                         </div>
                     )}
 
-                    {/* Metadata */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                        {/* Priority */}
                         <div className="flex items-center gap-2">
                             <IconFlag className="h-4 w-4 text-muted-foreground" />
                             <span className="text-sm text-muted-foreground">Priority:</span>
-                            <span className={cn("text-sm font-medium", getPriorityLabel(task.priority).color)}>
-                                {getPriorityLabel(task.priority).label}
-                            </span>
+                            <Select
+                                defaultValue={String(task.priority)}
+                                onValueChange={(value) => updateTask('priority', Number(value))}
+                            >
+                                <SelectTrigger className={cn("w-[120px] text-sm font-medium bg-transparent", getPriorityLabel(task.priority).color)}>
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="0">None</SelectItem>
+                                    <SelectItem value="1">Low</SelectItem>
+                                    <SelectItem value="2">Medium</SelectItem>
+                                    <SelectItem value="3">High</SelectItem>
+                                </SelectContent>
+                            </Select>
                         </div>
 
-                        {/* Created date */}
                         {task.createdAt && (
                             <div className="flex items-center gap-2">
                                 <IconClock className="h-4 w-4 text-muted-foreground" />
@@ -137,21 +156,22 @@ export function TaskDetail({ task, isMobile = false }: TaskDetailProps) {
                             </div>
                         )}
 
-                        {/* Due date */}
                         {task.dueDate && (
                             <div className="flex items-center gap-2">
                                 <IconCalendar className="h-4 w-4 text-muted-foreground" />
                                 <span className="text-sm text-muted-foreground">Due:</span>
-                                <span className={cn(
-                                    "text-sm",
-                                    task.dueDate < new Date() && !task.completed && "text-red-600 font-medium"
-                                )}>
-                                    {formatDate(task.dueDate)}
-                                </span>
+                                <input
+                                    type="datetime-local"
+                                    defaultValue={new Date(task.dueDate.getTime() - task.dueDate.getTimezoneOffset() * 60000).toISOString().slice(0, 16)}
+                                    onBlur={(e) => updateTask('dueDate', new Date(e.target.value))}
+                                    className={cn(
+                                        "text-sm bg-transparent",
+                                        task.dueDate < new Date() && !task.completed && "text-red-600 font-medium"
+                                    )}
+                                />
                             </div>
                         )}
 
-                        {/* Completed date */}
                         {task.completedAt && (
                             <div className="flex items-center gap-2">
                                 <IconCheck className="h-4 w-4 text-green-600" />
@@ -163,7 +183,6 @@ export function TaskDetail({ task, isMobile = false }: TaskDetailProps) {
                         )}
                     </div>
 
-                    {/* Tags */}
                     {task.tags && task.tags.length > 0 && (
                         <div className="mb-6">
                             <h3 className="text-sm font-medium text-muted-foreground mb-2">Tags</h3>
@@ -180,7 +199,6 @@ export function TaskDetail({ task, isMobile = false }: TaskDetailProps) {
                         </div>
                     )}
 
-                    {/* Actions */}
                     <div className="flex gap-2 pt-4 border-t">
                         {!task.completed && (
                             <Button

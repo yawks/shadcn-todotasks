@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next'
+import DOMPurify from 'dompurify'
 
 import { Task } from '@/backends/types'
 import { Badge } from '@/components/ui/badge'
@@ -63,7 +64,7 @@ export function TasksList({
         <div className="space-y-1 p-2">
           <TooltipProvider delayDuration={200}>
             {tasks.map((task: Task) => {
-              const { id, title, description, priority, dueDate } = task
+              const { id, title, description, priority, dueDate, project } = task
               const isSelected = selectedTask?.id === id
 
               const priorityProps = getPriorityProps(priority, t)
@@ -83,9 +84,7 @@ export function TasksList({
                     >
                       <div className="flex flex-col gap-2">
                         <div className="flex items-start justify-between">
-                          <h3 className="font-bold text-sm leading-tight group-hover:text-primary">
-                            {title}
-                          </h3>
+                          <h3 className="font-bold text-sm leading-tight group-hover:text-primary" dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(title) }}></h3>
                           {dueDate && (
                             <div className="text-xs text-muted-foreground whitespace-nowrap">
                               {formatDate(dueDate, t)}
@@ -93,9 +92,14 @@ export function TasksList({
                           )}
                         </div>
 
+                        {project && (
+                          <div className="text-xs text-muted-foreground">
+                            {project.title}
+                          </div>
+                        )}
+
                         {description && (
-                          <p className="text-xs text-muted-foreground truncate">
-                            {description.split('\n')[0]}
+                          <p className="text-xs text-muted-foreground truncate" dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(description.split('\n')[0]) }}>
                           </p>
                         )}
 

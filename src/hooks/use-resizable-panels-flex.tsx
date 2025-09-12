@@ -7,6 +7,8 @@ interface UseResizablePanelsFlexOptions {
   defaultRightFlex: number
   minLeftFlex?: number
   minRightFlex?: number
+  minLeftWidth?: number
+  maxLeftWidth?: number
 }
 
 export function useResizablePanelsFlex({
@@ -15,7 +17,9 @@ export function useResizablePanelsFlex({
   defaultLeftFlex,
   defaultRightFlex,
   minLeftFlex = 0.15,
-  minRightFlex = 0.15
+  minRightFlex = 0.15,
+  minLeftWidth,
+  maxLeftWidth,
 }: UseResizablePanelsFlexOptions) {
   const [leftFlex, setLeftFlex] = useState(() => {
     const saved = localStorage.getItem(leftPanelKey)
@@ -48,8 +52,16 @@ export function useResizablePanelsFlex({
     const containerRect = document.querySelector('.resizable-container')?.getBoundingClientRect()
     if (!containerRect) return
 
-    const mouseX = e.clientX - containerRect.left
+    let mouseX = e.clientX - containerRect.left
     const containerWidth = containerRect.width
+
+    if (minLeftWidth && mouseX < minLeftWidth) {
+      mouseX = minLeftWidth
+    }
+    if (maxLeftWidth && mouseX > maxLeftWidth) {
+      mouseX = maxLeftWidth
+    }
+
     const newLeftRatio = mouseX / containerWidth
     const newRightRatio = 1 - newLeftRatio
 

@@ -69,6 +69,8 @@ function TasksContent() {
     defaultRightFlex: 0.6,
     minLeftFlex: 0.15,
     minRightFlex: 0.15,
+    minLeftWidth: 200,
+    maxLeftWidth: 600,
   })
 
   // Function to handle task selection
@@ -182,7 +184,7 @@ function TasksContent() {
         </div>
       </Header>
 
-      <div className="flex h-full w-full">
+      <div className="flex h-full w-full resizable-container">
         <div
           className={`flex h-full ${isMobile ? 'w-full' : ''}`}
           style={!isMobile ? { flex: `${leftFlex} 1 0%` } : undefined}
