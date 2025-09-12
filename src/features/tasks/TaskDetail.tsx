@@ -4,7 +4,7 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { Task } from "@/backends/types"
 import TodoBackend from "@/backends/nextcloud-todo/nextcloud-todo"
 import { cn } from "@/lib/utils"
-import { useState } from "react"
+import { useMemo, useState } from "react"
 import { useQueryClient } from "@tanstack/react-query"
 import Tiptap from "@/components/tiptap"
 import { Input } from "@/components/ui/input"
@@ -20,13 +20,24 @@ export function TaskDetail({ task, isMobile = false }: TaskDetailProps) {
     const [isLoading, setIsLoading] = useState(false)
     const queryClient = useQueryClient()
 
-    const backend = new TodoBackend()
+    const backend = useMemo(() => new TodoBackend(), [])
 
     const updateTask = async (field: keyof Task, value: Task[keyof Task]) => {
+        await queryClient.cancelQueries({ queryKey: ['tasks'] })
+
+        const previousTasks = queryClient.getQueryData(['tasks'])
+
+        queryClient.setQueryData(['tasks'], (old: Task[] | undefined) => {
+            if (!old) return []
+            return old.map(t =>
+                t.id === task.id ? { ...t, [field]: value } : t
+            )
+        })
+
         try {
             await backend.updateTask(task.id.toString(), { [field]: value })
-            await queryClient.invalidateQueries({ queryKey: ['tasks'] })
         } catch (error) {
+            queryClient.setQueryData(['tasks'], previousTasks)
             toast.error(`Error updating task: ${error instanceof Error ? error.message : 'Unknown error'}`)
         }
     }
@@ -35,10 +46,22 @@ export function TaskDetail({ task, isMobile = false }: TaskDetailProps) {
         if (task.completed) return;
 
         setIsLoading(true)
+
+        await queryClient.cancelQueries({ queryKey: ['tasks'] })
+
+        const previousTasks = queryClient.getQueryData(['tasks'])
+
+        queryClient.setQueryData(['tasks'], (old: Task[] | undefined) => {
+            if (!old) return []
+            return old.map(t =>
+                t.id === task.id ? { ...t, completed: true, completedAt: new Date() } : t
+            )
+        })
+
         try {
             await backend.setTaskCompleted(task.id.toString())
-            await queryClient.invalidateQueries({ queryKey: ['tasks'] })
         } catch (error) {
+            queryClient.setQueryData(['tasks'], previousTasks)
             toast.error(`Error completing task: ${error instanceof Error ? error.message : 'Unknown error'}`)
         } finally {
             setIsLoading(false)
