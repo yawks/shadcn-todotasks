@@ -13,21 +13,21 @@ import { toast } from "sonner"
 
 interface TaskDetailProps {
     readonly task: Task
+    readonly backend: TodoBackend
     readonly isMobile?: boolean
 }
 
-export function TaskDetail({ task, isMobile = false }: TaskDetailProps) {
+export function TaskDetail({ task, backend, isMobile = false }: TaskDetailProps) {
     const [isLoading, setIsLoading] = useState(false)
     const queryClient = useQueryClient()
 
-    const backend = useMemo(() => new TodoBackend(), [])
-
     const updateTask = async (field: keyof Task, value: Task[keyof Task]) => {
-        await queryClient.cancelQueries({ queryKey: ['tasks'] })
+        const queryKey = ['tasks', { projectId: task.project?.id ?? 'all' }]
+        await queryClient.cancelQueries({ queryKey })
 
-        const previousTasks = queryClient.getQueryData(['tasks'])
+        const previousTasks = queryClient.getQueryData(queryKey)
 
-        queryClient.setQueryData(['tasks'], (old: Task[] | undefined) => {
+        queryClient.setQueryData(queryKey, (old: Task[] | undefined) => {
             if (!old) return []
             return old.map(t =>
                 t.id === task.id ? { ...t, [field]: value } : t
@@ -37,7 +37,7 @@ export function TaskDetail({ task, isMobile = false }: TaskDetailProps) {
         try {
             await backend.updateTask(task.id.toString(), { [field]: value })
         } catch (error) {
-            queryClient.setQueryData(['tasks'], previousTasks)
+            queryClient.setQueryData(queryKey, previousTasks)
             toast.error(`Error updating task: ${error instanceof Error ? error.message : 'Unknown error'}`)
         }
     }
@@ -47,11 +47,12 @@ export function TaskDetail({ task, isMobile = false }: TaskDetailProps) {
 
         setIsLoading(true)
 
-        await queryClient.cancelQueries({ queryKey: ['tasks'] })
+        const queryKey = ['tasks', { projectId: task.project?.id ?? 'all' }]
+        await queryClient.cancelQueries({ queryKey })
 
-        const previousTasks = queryClient.getQueryData(['tasks'])
+        const previousTasks = queryClient.getQueryData(queryKey)
 
-        queryClient.setQueryData(['tasks'], (old: Task[] | undefined) => {
+        queryClient.setQueryData(queryKey, (old: Task[] | undefined) => {
             if (!old) return []
             return old.map(t =>
                 t.id === task.id ? { ...t, completed: true, completedAt: new Date() } : t
@@ -61,7 +62,7 @@ export function TaskDetail({ task, isMobile = false }: TaskDetailProps) {
         try {
             await backend.setTaskCompleted(task.id.toString())
         } catch (error) {
-            queryClient.setQueryData(['tasks'], previousTasks)
+            queryClient.setQueryData(queryKey, previousTasks)
             toast.error(`Error completing task: ${error instanceof Error ? error.message : 'Unknown error'}`)
         } finally {
             setIsLoading(false)

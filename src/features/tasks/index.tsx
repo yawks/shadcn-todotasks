@@ -26,6 +26,7 @@ import { TaskDetail } from './TaskDetail'
 import { TaskDetailSkeleton } from './components/task-detail-skeleton'
 import { TaskListSkeleton } from './components/task-list-skeleton'
 import { ThemeSwitch } from '@/components/theme-switch'
+import TodoBackend from '@/backends/nextcloud-todo/nextcloud-todo'
 
 function TasksContent() {
   const location = useLocation()
@@ -61,6 +62,8 @@ function TasksContent() {
   // Get taskId from URL search params
   const taskId = new URLSearchParams(location.search).get('taskId')
   const showTaskOnMobile = isMobile && Boolean(taskId)
+
+  const backend = useMemo(() => new TodoBackend(), [])
 
   const { leftFlex, rightFlex, handleMouseDown } = useResizablePanelsFlex({
     leftPanelKey: 'tasks-65-flex',
@@ -157,7 +160,7 @@ function TasksContent() {
         </Header>
         <Suspense fallback={<TaskDetailSkeleton />}>
           {selectedTask ? (
-            <TaskDetail task={selectedTask} isMobile={true} />
+            <TaskDetail task={selectedTask} backend={backend} isMobile={true} />
           ) : (
             <TaskDetailSkeleton />
           )}
@@ -225,7 +228,7 @@ function TasksContent() {
           <div className="flex h-full" style={{ flex: `${rightFlex} 1 0%` }}>
             <Suspense fallback={<TaskDetailSkeleton />}>
               {selectedTask ? (
-                <TaskDetail task={selectedTask} />
+                <TaskDetail task={selectedTask} backend={backend} />
               ) : (
                 <div className="flex h-full w-full items-center justify-center bg-muted/20">
                   <div className="text-center text-muted-foreground">
