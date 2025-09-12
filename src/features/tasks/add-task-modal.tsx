@@ -113,7 +113,9 @@ export function AddTaskModal({ trigger }: AddTaskModalProps) {
     const projectIdentifier = values.project;
 
     if (projectIdentifier) {
-      const existingProject = projects.find((p) => p.id === projectIdentifier || p.title === projectIdentifier);
+      // Get the latest projects data from the query cache to avoid stale closures
+      const projectsData = queryClient.getQueryData<Project[]>(['projects']) || [];
+      const existingProject = projectsData.find((p) => p.id === projectIdentifier || p.title === projectIdentifier);
 
       if (existingProject) {
         project = existingProject;

@@ -38,9 +38,8 @@ export function Combobox({ items, placeholder, searchPlaceholder, noItemsText, v
   const [searchValue, setSearchValue] = React.useState("")
 
   const handleSelect = (currentValue: string) => {
-    const newValue = currentValue === value ? "" : currentValue;
     if (onChange) {
-      onChange(newValue);
+      onChange(currentValue);
     }
     setOpen(false);
   };
@@ -68,7 +67,7 @@ export function Combobox({ items, placeholder, searchPlaceholder, noItemsText, v
           className={cn("w-full justify-between", className)}
         >
           {value
-            ? items.find((item) => item.value === value)?.label
+            ? items.find((item) => item.value === value)?.label || value
             : placeholder}
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
@@ -91,7 +90,7 @@ export function Combobox({ items, placeholder, searchPlaceholder, noItemsText, v
                 <CommandItem
                   key={item.value}
                   value={item.value}
-                  onSelect={() => handleSelect(item.value)}
+                  onSelect={handleSelect}
                 >
                   <Check
                     className={cn(

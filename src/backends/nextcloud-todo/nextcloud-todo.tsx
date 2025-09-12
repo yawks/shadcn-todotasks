@@ -3,6 +3,24 @@ import { NTProject, NTTask } from './nextcloud-todo-types';
 
 import { api } from '@/utils/request';
 
+/**
+ * Formats a JavaScript Date object into a 'YYYY-MM-DD HH:MM:SS' string for MySQL DATETIME columns.
+ * @param date The Date object to format.
+ * @returns The formatted date string.
+ */
+function toMySqlDateTime(date: Date): string {
+  const pad = (num: number) => num.toString().padStart(2, '0');
+
+  const year = date.getFullYear();
+  const month = pad(date.getMonth() + 1); // getMonth() is 0-indexed
+  const day = pad(date.getDate());
+  const hours = pad(date.getHours());
+  const minutes = pad(date.getMinutes());
+  const seconds = pad(date.getSeconds());
+
+  return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+}
+
 const NB_TASKS_TO_LOAD = 20;
 
 export default class TodoBackend implements Backend {
@@ -243,12 +261,16 @@ export default class TodoBackend implements Backend {
   }
 
   async createTask(task: Partial<Task>): Promise<Task> {
+    if (!task.title || typeof task.title !== 'string' || task.title.trim() === '') {
+      throw new Error('Task title must be a non-empty string.');
+    }
+
     const url = await this._getApiUrl('/tasks')
     const taskData = {
       projectId: task.project ? parseInt(task.project.id, 10) : undefined,
       title: task.title,
       description: task.description,
-      dueDate: task.dueDate?.toISOString(),
+      dueDate: task.dueDate ? toMySqlDateTime(task.dueDate) : undefined,
       priority: task.priority,
       tags: task.tags?.join(','),
     }
@@ -297,7 +319,7 @@ export default class TodoBackend implements Backend {
 
     if (task.title) taskData.title = task.title
     if (task.description) taskData.description = task.description
-    if (task.dueDate) taskData.dueDate = task.dueDate.toISOString()
+    if (task.dueDate) taskData.dueDate = toMySqlDateTime(task.dueDate)
     if (task.priority) taskData.priority = task.priority
     if (task.tags) taskData.tags = task.tags.join(',')
     if (task.completed) taskData.completedAt = new Date().toISOString()
