@@ -17,7 +17,7 @@ import { cn } from '@/lib/utils';
 import { useForm } from 'react-hook-form';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
-import TodoBackend from '@/backends/nextcloud-todo/nextcloud-todo';
+import todoBackend from '@/backends/nextcloud-todo/nextcloud-todo';
 import { useTranslation } from 'react-i18next';
 import { zodResolver } from '@hookform/resolvers/zod';
 
@@ -56,16 +56,15 @@ export function AddTaskModal({ trigger }: AddTaskModalProps) {
   const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const titleInputRef = useRef<HTMLInputElement>(null);
-  const backend = new TodoBackend();
   const queryClient = useQueryClient();
 
   const { data: projects = [] } = useQuery({
     queryKey: ['projects'],
-    queryFn: () => backend.getProjects(),
+    queryFn: () => todoBackend.getProjects(),
   });
 
   const createTaskMutation = useMutation({
-    mutationFn: (taskData) => backend.createTask(taskData),
+    mutationFn: (taskData) => todoBackend.createTask(taskData),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['tasks'] });
       setOpen(false);
@@ -74,7 +73,7 @@ export function AddTaskModal({ trigger }: AddTaskModalProps) {
   });
 
   const createProjectMutation = useMutation({
-    mutationFn: (projectName) => backend.createProject(projectName),
+    mutationFn: (projectName) => todoBackend.createProject(projectName),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['projects'] });
     },

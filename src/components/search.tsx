@@ -11,7 +11,7 @@ import { cn, timeSince } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import React from 'react'
 import { Task } from '@/backends/types'
-import TodoBackend from '@/backends/nextcloud-todo/nextcloud-todo'
+import todoBackend from '@/backends/nextcloud-todo/nextcloud-todo'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { useSearch } from '@/context/search-context'
 
@@ -34,7 +34,6 @@ export function Search({ className = '', placeholder = 'Search tasks...' }: Prop
     setSearchError,
     setIsSearchMode,
   } = useSearch()
-  const backend = React.useMemo(() => new TodoBackend(), [])
   const inputRef = React.useRef<HTMLInputElement>(null)
   const containerRef = React.useRef<HTMLDivElement>(null)
   const isMobile = useIsMobile()
@@ -108,7 +107,7 @@ export function Search({ className = '', placeholder = 'Search tasks...' }: Prop
       try {
         setIsSearching(true)
         setSearchError(null)
-        const results = await backend.searchTasks(searchQuery)
+        const results = await todoBackend.searchTasks(searchQuery)
         setSearchResults(results.slice(0, 5)) // Limit to 5 results for autocomplete
       } catch (error) {
         setSearchResults([])
@@ -134,7 +133,7 @@ export function Search({ className = '', placeholder = 'Search tasks...' }: Prop
     try {
       setIsSearching(true)
       setSearchError(null)
-      const results = await backend.searchTasks(searchQuery)
+      const results = await todoBackend.searchTasks(searchQuery)
       setSearchResults(results)
       setIsSearchMode(true) // Enable search mode to show results in main list
     } catch (error) {

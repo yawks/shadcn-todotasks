@@ -10,7 +10,7 @@ import {
 import { IconChecklist } from '@tabler/icons-react'
 import React from 'react'
 import { Task } from '@/backends/types'
-import TodoBackend from '@/backends/nextcloud-todo/nextcloud-todo'
+import todoBackend from '@/backends/nextcloud-todo/nextcloud-todo'
 import { timeSince } from '@/lib/utils'
 import { useSearch } from '@/context/search-context'
 
@@ -29,8 +29,6 @@ export function SearchDialog() {
     setIsSearchMode,
   } = useSearch()
 
-  const backend = React.useMemo(() => new TodoBackend(), [])
-
   // Debounced search effect
   React.useEffect(() => {
     if (!searchQuery.trim()) {
@@ -42,7 +40,7 @@ export function SearchDialog() {
       try {
         setIsSearching(true)
         setSearchError(null)
-              const results = await backend.searchTasks(searchQuery)
+              const results = await todoBackend.searchTasks(searchQuery)
         setSearchResults(results)
       } catch (error) {
         setSearchResults([])
