@@ -5,7 +5,7 @@ import { Task } from "@/backends/types"
 import todoBackend from "@/backends/nextcloud-todo/nextcloud-todo"
 import { cn } from "@/lib/utils"
 import { useState } from "react"
-import { useQueryClient } from "@tanstack/react-query"
+import { useMutation, useQueryClient } from "@tanstack/react-query"
 import Tiptap from "@/components/tiptap"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
@@ -21,26 +21,29 @@ export function TaskDetail({ task, projectId, isMobile = false }: TaskDetailProp
     const [isLoading, setIsLoading] = useState(false)
     const queryClient = useQueryClient()
 
-    const updateTask = async (field: keyof Task, value: Task[keyof Task]) => {
-        const queryKey = ['tasks', { projectId: projectId ?? 'all' }]
-        await queryClient.cancelQueries({ queryKey })
-
-        const previousTasks = queryClient.getQueryData(queryKey)
-
-        queryClient.setQueryData(queryKey, (old: Task[] | undefined) => {
-            if (!old) return []
-            return old.map(t =>
-                t.id === task.id ? { ...t, [field]: value } : t
-            )
-        })
-
-        try {
-            await todoBackend.updateTask(task.id.toString(), { [field]: value })
-        } catch (error) {
-            queryClient.setQueryData(queryKey, previousTasks)
-            toast.error(`Error updating task: ${error instanceof Error ? error.message : 'Unknown error'}`)
-        }
-    }
+    const { mutate: updateTask } = useMutation({
+        mutationFn: async ({ field, value }: { field: keyof Task, value: Task[keyof Task] }) => {
+            return todoBackend.updateTask(task.id.toString(), { [field]: value })
+        },
+        onMutate: async ({ field, value }) => {
+            const queryKey = ['tasks', { projectId: projectId ?? 'all' }]
+            await queryClient.cancelQueries({ queryKey })
+            const previousTasks = queryClient.getQueryData(queryKey)
+            queryClient.setQueryData(queryKey, (old: Task[] | undefined) => {
+                if (!old) return []
+                return old.map(t =>
+                    t.id === task.id ? { ...t, [field]: value } : t
+                )
+            })
+            return { previousTasks, queryKey }
+        },
+        onError: (err, variables, context) => {
+            if (context?.previousTasks) {
+                queryClient.setQueryData(context.queryKey, context.previousTasks)
+            }
+            toast.error(`Error updating task: ${err instanceof Error ? err.message : 'Unknown error'}`)
+        },
+    })
 
     const handleCompleteToggle = async () => {
         if (task.completed) return;
@@ -124,7 +127,7 @@ export function TaskDetail({ task, projectId, isMobile = false }: TaskDetailProp
                         <div className="flex-1">
                             <Input
                                 defaultValue={task.title}
-                                onBlur={(e) => updateTask('title', e.currentTarget.value)}
+                                onBlur={(e) => updateTask({ field: 'title', value: e.currentTarget.value })}
                                 className={cn(
                                     "text-2xl font-bold mb-2",
                                     task.completed && "line-through text-muted-foreground"
@@ -145,7 +148,7 @@ export function TaskDetail({ task, projectId, isMobile = false }: TaskDetailProp
                             <h2 className="text-lg font-semibold mb-2">Description</h2>
                             <Tiptap
                                 content={task.description}
-                                onBlur={(content) => updateTask('description', content)}
+                                onBlur={(content) => updateTask({ field: 'description', value: content })}
                             />
                         </div>
                     )}
@@ -156,7 +159,7 @@ export function TaskDetail({ task, projectId, isMobile = false }: TaskDetailProp
                             <span className="text-sm text-muted-foreground">Priority:</span>
                             <Select
                                 defaultValue={String(task.priority)}
-                                onValueChange={(value) => updateTask('priority', Number(value))}
+                                onValueChange={(value) => updateTask({ field: 'priority', value: Number(value) })}
                             >
                                 <SelectTrigger className={cn("w-[120px] text-sm font-medium bg-transparent", getPriorityLabel(task.priority).color)}>
                                     <SelectValue />
@@ -187,7 +190,7 @@ export function TaskDetail({ task, projectId, isMobile = false }: TaskDetailProp
                                 <input
                                     type="datetime-local"
                                     defaultValue={new Date(task.dueDate.getTime() - task.dueDate.getTimezoneOffset() * 60000).toISOString().slice(0, 16)}
-                                    onBlur={(e) => updateTask('dueDate', new Date(e.target.value))}
+                                    onBlur={(e) => updateTask({ field: 'dueDate', value: new Date(e.target.value) })}
                                     className={cn(
                                         "text-sm bg-transparent",
                                         task.dueDate < new Date() && !task.completed && "text-red-600 font-medium"
