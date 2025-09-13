@@ -1,6 +1,6 @@
 import { Suspense, useEffect, useMemo, useRef, useState } from 'react'
 import { useLocation, useNavigate } from '@tanstack/react-router'
-import { useSuspenseQuery } from '@tanstack/react-query'
+import { useQuery } from '@tanstack/react-query'
 
 import { Task, TaskType } from '@/backends/types'
 import { tasksQueryOptions } from './data/queries'
@@ -50,8 +50,8 @@ function TasksContent() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [projectId])
 
-  // Fetch tasks with suspense
-  const { data: allTasks, error } = useSuspenseQuery(tasksQueryOptions(projectId))
+  // Fetch tasks
+  const { data: allTasks = [], error, isLoading } = useQuery(tasksQueryOptions(projectId))
 
   // Ref for the list container to manage scroll
   const filterTaskListRef = useRef<FilterTaskListRef>(null)
@@ -125,6 +125,10 @@ function TasksContent() {
       }, 100)
     }
   }, [isMobile, showTaskOnMobile, scrollPosition])
+
+  if (isLoading) {
+    return <TaskListSkeleton />
+  }
 
   if (error) {
     return (
