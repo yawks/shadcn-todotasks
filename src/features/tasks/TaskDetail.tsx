@@ -127,7 +127,11 @@ export function TaskDetail({ task, projectId, isMobile = false }: TaskDetailProp
                         <div className="flex-1">
                             <Input
                                 defaultValue={task.title}
-                                onBlur={(e) => updateTask({ field: 'title', value: e.currentTarget.value })}
+                                onBlur={(e) => {
+                                    if (e.currentTarget.value !== task.title) {
+                                        updateTask({ field: 'title', value: e.currentTarget.value })
+                                    }
+                                }}
                                 className={cn(
                                     "text-2xl font-bold mb-2",
                                     task.completed && "line-through text-muted-foreground"
@@ -148,7 +152,11 @@ export function TaskDetail({ task, projectId, isMobile = false }: TaskDetailProp
                             <h2 className="text-lg font-semibold mb-2">Description</h2>
                             <Tiptap
                                 content={task.description}
-                                onBlur={(content) => updateTask({ field: 'description', value: content })}
+                                onBlur={(content) => {
+                                    if (content !== task.description) {
+                                        updateTask({ field: 'description', value: content })
+                                    }
+                                }}
                             />
                         </div>
                     )}
